@@ -1,7 +1,7 @@
 # Publish Subscribe
 
 ## Overview and Features
-A pubsub implementation with featuers to facilitate game development.
+A pubsub implementation with features to facilitate game development.
 
 **Time Boxing**: Event dispatching is always done synchronously and is a blocking operation.  A time budget can be specified to help prevent the game from dropping frames.
 
