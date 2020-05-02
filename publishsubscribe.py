@@ -1,5 +1,5 @@
 """
-A pubsub implementation with featuers to facilitate game development.
+A pubsub implementation with features to facilitate game development.
 """
 
 from dataclasses import dataclass, field
