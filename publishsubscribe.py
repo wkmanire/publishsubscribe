@@ -145,11 +145,15 @@ def dispatch(budget_ms: int = 0, event_types: Optional[Set[int]] = None):
         LOGGER.debug(f"dispatch: budget={budget_ms}ms")
         if len(EVENT_QUEUE) == 0 or len(ACTIVE_GROUP) == 0:
             return
-        budget_ns = budget_ms * 10e6  # convert the budget to nanoseconds
+        adjusted_budget_ms = budget_ms
+        if budget_ms < 0:
+            LOGGER.debug("Negative budget_ms adjusted to zero")
+            adjusted_budget_ms = 0
+        budget_ns = adjusted_budget_ms * 10e6  # convert the budget to nanoseconds
         timestamp = time_ns()
         elapsed_ns = 0
         filtered = list()
-        while EVENT_QUEUE and (budget_ms == 0 or elapsed_ns < budget_ns):
+        while EVENT_QUEUE and (adjusted_budget_ms == 0 or elapsed_ns < budget_ns):
             event = heappop(EVENT_QUEUE)
             if event_types and event.event_type not in event_types:
                 filtered.append(event)

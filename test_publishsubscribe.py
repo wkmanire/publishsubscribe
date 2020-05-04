@@ -247,3 +247,24 @@ def test_dispatch_from_handler_raises():
 
     publish(event_type)
     dispatch()
+
+
+def test_negative_dispatch_budget_time():
+    """
+    A negative budget should be equal to passing 0, or infinite time.
+    """
+    reset()
+
+    calls = 0
+
+    def callback(data):
+        nonlocal calls
+        calls += 1
+        sleep(0.1)
+
+    event_type = 1
+    subscribe(event_type, callback)
+    publish(event_type)
+    publish(event_type)
+    dispatch(budget_ms=-1)
+    assert calls == 2
