@@ -232,3 +232,18 @@ def test_message_prioritization():
     # but we expect to see the high priority event dispatched before
     # the lower priority event
     assert event_order == ["high_priority", "low_priority"]
+
+
+def test_dispatch_from_handler_raises():
+    reset()
+
+    def callback(data):
+        with pytest.raises(PubSubException) as ex:
+            dispatch()
+        assert "dispatch" in str(ex)
+
+    event_type = 1
+    subscribe(event_type, callback)
+
+    publish(event_type)
+    dispatch()
