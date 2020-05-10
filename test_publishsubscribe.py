@@ -298,3 +298,14 @@ def test_publish_default():
     dispatch()
     assert default_callback_called == True
     assert non_default_callback_called == True
+
+
+def test_lack_of_subscribers_for_event_type_is_not_an_error():
+    """
+    Do not raise KeyError when there aren't subscribers for an event
+    type.
+    """
+    reset()
+    subscribe(1, lambda _: _)  # subscribe to 1
+    publish(2)  # But publish to 2
+    dispatch()

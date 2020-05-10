@@ -166,19 +166,22 @@ def dispatch(budget_ms: int = 0, event_types: Optional[Set[int]] = None):
         timestamp = time_ns()
         elapsed_ns = 0
         filtered = list()
+        empty_list = []
         while EVENT_QUEUE and (adjusted_budget_ms == 0 or elapsed_ns < budget_ns):
             event = heappop(EVENT_QUEUE)
             if event_types and event.event_type not in event_types:
                 filtered.append(event)
             else:
                 if event.is_default:
-                    for subscription in SUBSCRIBERS["default"][event.event_type]:
+                    for subscription in SUBSCRIBERS["default"].get(
+                        event.event_type, empty_list
+                    ):
                         subscription.listener(event.data)
                         elapsed_ns = time_ns() - timestamp
                         if budget_ns > 0 and elapsed_ns >= budget_ns:
                             break
                 if ACTIVE_GROUP is not SUBSCRIBERS["default"]:
-                    for subscription in ACTIVE_GROUP[event.event_type]:
+                    for subscription in ACTIVE_GROUP.get(event.event_type, empty_list):
                         subscription.listener(event.data)
                         elapsed_ns = time_ns() - timestamp
                         if budget_ns > 0 and elapsed_ns >= budget_ns:

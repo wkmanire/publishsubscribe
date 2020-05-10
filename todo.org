@@ -1,3 +1,4 @@
 * DONE FEATURE: Ability to subscribe/publish/dispatch Global events that are always active
 * TODO ENHANCEMENT: refactor dispatch into a set of smaller, more testable functions
 * TODO ENHANCEMENT: profile refactored version against not refactored version to determine the performance penalty of the additional calls. Document the results.
+* TODO ENHANCEMENT: Improve test coverage to 100%
