@@ -8,6 +8,7 @@ from publishsubscribe import (
     dispatch,
     flush,
     publish,
+    publish_default,
     reset,
     set_active_subscriber_group,
     subscribe,
@@ -268,3 +269,32 @@ def test_negative_dispatch_budget_time():
     publish(event_type)
     dispatch(budget_ms=-1)
     assert calls == 2
+
+
+def test_publish_default():
+    """
+    publish_default will publish events that will be dispatched to the
+    default subscribers regardless of which group is currently active
+    """
+    reset()
+
+    default_callback_called = False
+    non_default_callback_called = False
+
+    def default_callback(data):
+        nonlocal default_callback_called
+        default_callback_called = True
+
+    def non_default_callback(data):
+        nonlocal non_default_callback_called
+        non_default_callback_called = True
+
+    event_type = 1
+    subscribe(event_type, default_callback)
+    create_subscriber_group("non_default")
+    set_active_subscriber_group("non_default")
+    subscribe(event_type, non_default_callback)
+    publish_default(event_type)
+    dispatch()
+    assert default_callback_called == True
+    assert non_default_callback_called == True

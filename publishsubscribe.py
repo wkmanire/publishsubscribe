@@ -16,7 +16,8 @@ DEFAULT_LOW_PRIORITY = 99999
 
 @dataclass(order=True)
 class Event:
-    priority: int = DEFAULT_LOW_PRIORITY
+    is_default: bool = field(default=True, compare=True)
+    priority: int = field(default=DEFAULT_LOW_PRIORITY, compare=True)
     event_type: int = field(default=0, compare=False)
     data: object = field(default=None, compare=False)
 
@@ -103,7 +104,19 @@ def publish(
     global PUBLISH_LOCK, EVENT_QUEUE
     with PUBLISH_LOCK:
         LOGGER.debug(f"publish: event_type={event_type}, priority={priority}")
-        event = Event(priority, event_type, data)
+        event = Event(
+            ACTIVE_GROUP is SUBSCRIBERS["default"], priority, event_type, data
+        )
+        heappush(EVENT_QUEUE, event)
+
+
+def publish_default(
+    event_type: int, priority: int = DEFAULT_LOW_PRIORITY, data: Optional[Any] = None
+):
+    global PUBLISH_LOCK, EVENT_QUEUE
+    with PUBLISH_LOCK:
+        LOGGER.debug(f"publish_default: event_type={event_type}, priority={priority}")
+        event = Event(True, priority, event_type, data)
         heappush(EVENT_QUEUE, event)
 
 
@@ -158,11 +171,18 @@ def dispatch(budget_ms: int = 0, event_types: Optional[Set[int]] = None):
             if event_types and event.event_type not in event_types:
                 filtered.append(event)
             else:
-                for subscription in ACTIVE_GROUP[event.event_type]:
-                    subscription.listener(event.data)
-                    elapsed_ns = time_ns() - timestamp
-                    if budget_ns > 0 and elapsed_ns >= budget_ns:
-                        break
+                if event.is_default:
+                    for subscription in SUBSCRIBERS["default"][event.event_type]:
+                        subscription.listener(event.data)
+                        elapsed_ns = time_ns() - timestamp
+                        if budget_ns > 0 and elapsed_ns >= budget_ns:
+                            break
+                if ACTIVE_GROUP is not SUBSCRIBERS["default"]:
+                    for subscription in ACTIVE_GROUP[event.event_type]:
+                        subscription.listener(event.data)
+                        elapsed_ns = time_ns() - timestamp
+                        if budget_ns > 0 and elapsed_ns >= budget_ns:
+                            break
         for event in filtered:
             heappush(EVENT_QUEUE, event)
 
