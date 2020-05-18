@@ -205,3 +205,15 @@ def flush(event_types: Optional[Set[int]] = None):
             heapify(EVENT_QUEUE)
         else:
             EVENT_QUEUE = []
+
+
+def broadcast(event_type, data: Optional[Any] = None):
+    with SUBSCRIBERS_LOCK:
+        for subscription in ACTIVE_GROUP.get(event_type, []):
+            subscription.listener(data)
+
+
+def broadcast_default(event_type, data: Optional[Any] = None):
+    with SUBSCRIBERS_LOCK:
+        for subscription in SUBSCRIBERS["default"].get(event_type, []):
+            subscription.listener(data)

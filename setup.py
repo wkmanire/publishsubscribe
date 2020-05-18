@@ -9,7 +9,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="publishsubscribe",
-    version="1.2.1",
+    version="1.2.2",
     description="A pubsub library built specifically with game mechanics in mind.",
     long_description=long_description,
     long_description_content_type="text/markdown",

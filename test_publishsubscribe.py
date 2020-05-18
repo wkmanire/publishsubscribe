@@ -4,6 +4,8 @@ from time import sleep
 
 from publishsubscribe import (
     PubSubException,
+    broadcast,
+    broadcast_default,
     create_subscriber_group,
     dispatch,
     flush,
@@ -309,3 +311,31 @@ def test_lack_of_subscribers_for_event_type_is_not_an_error():
     subscribe(1, lambda _: _)  # subscribe to 1
     publish(2)  # But publish to 2
     dispatch()
+
+
+def test_broadcast_immediately_calls_subscribers():
+    reset()
+    called = False
+
+    def callback(data=None):
+        nonlocal called
+        called = data == "data"
+
+    subscribe(1, callback)
+    broadcast(1, data="data")
+    assert called
+
+
+def test_broadcast_immediately_calls_subscribers_in_the_default_group():
+    reset()
+    called = False
+
+    def callback(data=None):
+        nonlocal called
+        called = data == "data"
+
+    subscribe(1, callback)
+    create_subscriber_group("non_default")
+    set_active_subscriber_group("non_default")
+    broadcast_default(1, data="data")
+    assert called
